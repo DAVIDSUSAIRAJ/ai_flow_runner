@@ -2,6 +2,7 @@ import { ReactFlowProvider } from 'reactflow';
 import TextInputPanel from './components/TextInputPanel';
 import FlowCanvas from './components/FlowCanvas';
 import ExecutionOrderPanel from './components/ExecutionOrderPanel';
+import ResultsModal from './components/ResultsModal';
 
 function App() {
   return (
@@ -22,6 +23,9 @@ function App() {
       <div className="w-72 flex-shrink-0 border-l border-coal-800 flex flex-col">
         <ExecutionOrderPanel />
       </div>
+
+      {/* Results Modal - Shows after flow completes */}
+      <ResultsModal />
     </div>
   );
 }
