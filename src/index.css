@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom scrollbar for the midnight theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #18181b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #41414b;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #5d5d6c;
+}
+
+/* ReactFlow overrides */
+.react-flow__background {
+  background-color: #18181b !important;
+}
+
+.react-flow__controls {
+  background: #393941 !important;
+  border: 1px solid #4c4c58 !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+}
+
+.react-flow__controls-button {
+  background: #393941 !important;
+  border-bottom: 1px solid #4c4c58 !important;
+  color: #b8b8c1 !important;
+  fill: #b8b8c1 !important;
+}
+
+.react-flow__controls-button:hover {
+  background: #4c4c58 !important;
+}
+
+.react-flow__edge-path {
+  stroke: #737384 !important;
+  stroke-width: 2px !important;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #f97316 !important;
+}
+
+/* Animated edge for running state */
+.react-flow__edge.animated .react-flow__edge-path {
+  stroke-dasharray: 5;
+  animation: dashdraw 0.5s linear infinite;
+}
+
+@keyframes dashdraw {
+  from {
+    stroke-dashoffset: 10;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Grid pattern background */
+.flow-canvas-bg {
+  background-image: 
+    radial-gradient(circle at 1px 1px, #2a2a32 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* Glowing border for active elements */
+.glow-border {
+  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.3),
+              0 0 20px rgba(249, 115, 22, 0.15);
+}
+
+/* Drag and drop styles */
+.dragging {
+  opacity: 0.5;
+  transform: scale(1.02);
+}
+
+.drop-target {
+  border-color: #f97316 !important;
+  background-color: rgba(249, 115, 22, 0.1) !important;
+}
+
+/* Status pulse animations */
+@keyframes statusPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.status-running {
+  animation: statusPulse 1s ease-in-out infinite;
+}
+
+/* Text selection */
+::selection {
+  background-color: rgba(249, 115, 22, 0.3);
+  color: #fff;
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid #f97316;
+  outline-offset: 2px;
+}
+
+/* Base styles */
+body {
+  background-color: #18181b;
+  color: #eeeef0;
+  font-family: 'DM Sans', system-ui, sans-serif;
+}
+
