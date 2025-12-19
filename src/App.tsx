@@ -14,12 +14,12 @@ function App() {
     <div className="h-screen w-screen bg-coal-950 flex flex-col lg:flex-row overflow-hidden">
       {/* Desktop: Left Panel - Text Input */}
       <div className="hidden lg:flex w-80 flex-shrink-0 border-r border-coal-800 flex-col">
-        <TextInputPanel />
+        <TextInputPanel onRunFlow={() => {}} />
       </div>
 
       {/* Mobile: Text Input Panel (shown when tab is 'input') */}
       <div className={`lg:hidden flex-1 flex flex-col ${mobileTab === 'input' ? 'flex' : 'hidden'}`}>
-        <TextInputPanel />
+        <TextInputPanel onRunFlow={() => setMobileTab('canvas')} />
       </div>
 
       {/* Desktop: Center - ReactFlow Canvas */}

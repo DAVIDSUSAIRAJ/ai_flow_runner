@@ -1,11 +1,19 @@
 import { useFlowStore } from '../store/flowStore';
 
-function TextInputPanel() {
+type TextInputPanelProps = {
+  onRunFlow?: () => void;
+};
+
+function TextInputPanel({ onRunFlow }: TextInputPanelProps) {
   const { input, setInput, runFlow, isRunning, steps } = useFlowStore();
 
   const handleRunFlow = () => {
     if (!isRunning && input.trim() && steps.length > 0) {
       runFlow();
+      // Switch to Flow tab on mobile when flow starts
+      if (onRunFlow) {
+        onRunFlow();
+      }
     }
   };
 
