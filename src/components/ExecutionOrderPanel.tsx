@@ -40,7 +40,9 @@ function ExecutionOrderPanel() {
           )}
         </div>
         <p className="text-xs text-coal-500">
-          <span className="hidden sm:inline">Drag to reorder • </span>Steps run top to bottom
+          <span className="hidden lg:inline">Drag to reorder • </span>
+          <span className="lg:hidden">Use ↑↓ buttons to reorder • </span>
+          Steps run top to bottom
         </p>
       </div>
 
@@ -104,6 +106,7 @@ function ExecutionOrderPanel() {
                 moveStep={moveStep}
                 onDelete={handleDelete}
                 isRunning={isRunning}
+                totalSteps={steps.length}
               />
             ))}
           </div>

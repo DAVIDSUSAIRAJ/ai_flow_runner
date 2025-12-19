@@ -10,6 +10,7 @@ type DraggableStepItemProps = {
   moveStep: (fromIndex: number, toIndex: number) => void;
   onDelete: (id: string) => void;
   isRunning: boolean;
+  totalSteps: number;
 };
 
 const statusColors: Record<StepStatus, string> = {
@@ -19,7 +20,7 @@ const statusColors: Record<StepStatus, string> = {
   error: 'bg-rose-500',
 };
 
-function DraggableStepItem({ step, index, moveStep, onDelete, isRunning }: DraggableStepItemProps) {
+function DraggableStepItem({ step, index, moveStep, onDelete, isRunning, totalSteps }: DraggableStepItemProps) {
   const ref = useRef<HTMLDivElement>(null);
   const config = STEP_CONFIGS[step.type];
 
@@ -51,26 +52,81 @@ function DraggableStepItem({ step, index, moveStep, onDelete, isRunning }: Dragg
 
   drag(drop(ref));
 
+  const handleMoveUp = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (index > 0 && !isRunning) {
+      moveStep(index, index - 1);
+    }
+  };
+
+  const handleMoveDown = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (index < totalSteps - 1 && !isRunning) {
+      moveStep(index, index + 1);
+    }
+  };
+
   return (
     <div
       ref={ref}
       className={`
         group relative flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-xl
-        bg-coal-900 border transition-all duration-200 cursor-grab active:cursor-grabbing
-        touch-manipulation min-h-[60px] sm:min-h-[70px]
+        bg-coal-900 border transition-all duration-200 
+        min-h-[60px] sm:min-h-[70px]
         ${isDragging 
           ? 'opacity-50 scale-105 border-ember-500 shadow-lg shadow-ember-500/20' 
           : isOver
             ? 'border-ember-500/50 bg-coal-800'
             : 'border-coal-700 hover:border-coal-600'
         }
-        ${isRunning ? 'cursor-not-allowed opacity-75' : ''}
+        ${isRunning ? 'opacity-75' : ''}
+        ${!isRunning ? 'cursor-grab active:cursor-grabbing' : 'cursor-not-allowed'}
       `}
       style={{ opacity: isDragging ? 0.5 : 1 }}
     >
-      {/* Drag Handle */}
+      {/* Mobile: Up/Down Buttons - Visible only on mobile */}
+      <div className="lg:hidden flex flex-col gap-1 flex-shrink-0">
+        <button
+          onClick={handleMoveUp}
+          disabled={isRunning || index === 0}
+          className={`
+            p-1.5 rounded-lg transition-all duration-200
+            touch-manipulation min-w-[36px] min-h-[36px]
+            flex items-center justify-center
+            ${isRunning || index === 0
+              ? 'opacity-30 cursor-not-allowed text-coal-600'
+              : 'bg-coal-800 text-coal-400 hover:bg-coal-700 hover:text-ember-400 active:bg-coal-600'
+            }
+          `}
+          title="Move up"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+          </svg>
+        </button>
+        <button
+          onClick={handleMoveDown}
+          disabled={isRunning || index === totalSteps - 1}
+          className={`
+            p-1.5 rounded-lg transition-all duration-200
+            touch-manipulation min-w-[36px] min-h-[36px]
+            flex items-center justify-center
+            ${isRunning || index === totalSteps - 1
+              ? 'opacity-30 cursor-not-allowed text-coal-600'
+              : 'bg-coal-800 text-coal-400 hover:bg-coal-700 hover:text-ember-400 active:bg-coal-600'
+            }
+          `}
+          title="Move down"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Desktop: Drag Handle */}
       <div className={`
-        flex flex-col gap-0.5 text-coal-500 flex-shrink-0
+        hidden lg:flex flex-col gap-0.5 text-coal-500 flex-shrink-0
         ${isRunning ? 'opacity-30' : 'group-hover:text-coal-400'}
       `}>
         <div className="flex gap-0.5">
