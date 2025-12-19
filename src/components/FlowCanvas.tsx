@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import ReactFlow, {
   Background,
   Controls,
@@ -8,6 +8,7 @@ import ReactFlow, {
   useEdgesState,
   BackgroundVariant,
   ConnectionMode,
+  useReactFlow,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { useFlowStore } from '../store/flowStore';
@@ -16,6 +17,27 @@ import StepNode from './StepNode';
 const nodeTypes = {
   stepNode: StepNode,
 };
+
+// Component to set default zoom level - must be inside ReactFlow
+function DefaultZoomSetter() {
+  const { fitView } = useReactFlow();
+  const hasSetZoom = useRef(false);
+
+  useEffect(() => {
+    if (!hasSetZoom.current) {
+      // Set default zoom level with fitView
+      fitView({ 
+        padding: 0.2, 
+        duration: 0, // Instant, no animation
+        minZoom: 0.5, // Minimum zoom level
+        maxZoom: 1.5, // Maximum zoom level
+      });
+      hasSetZoom.current = true;
+    }
+  }, [fitView]);
+
+  return null;
+}
 
 function FlowCanvas() {
   const { steps } = useFlowStore();
@@ -186,6 +208,9 @@ function FlowCanvas() {
           connectionMode={ConnectionMode.Loose}
           fitView
           fitViewOptions={{ padding: 0.2 }}
+          minZoom={0.5}
+          maxZoom={1}
+          defaultViewport={{ x: 0, y: 0, zoom: 0.5 }}
           proOptions={{ hideAttribution: true }}
           className="bg-coal-950"
           panOnScroll={true}
@@ -200,7 +225,9 @@ function FlowCanvas() {
           <Controls 
             className="!bg-coal-900 !border-coal-700 !rounded-xl !overflow-hidden"
             showInteractive={false}
+            showFitView={true}
           />
+          <DefaultZoomSetter />
         </ReactFlow>
       )}
     </div>

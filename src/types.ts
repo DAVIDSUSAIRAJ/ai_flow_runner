@@ -1,6 +1,6 @@
 export type StepStatus = 'idle' | 'running' | 'done' | 'error';
 
-export type StepType = 'clean_text' | 'detect_emotion' | 'categorize_text' | 'summarize';
+export type StepType = 'clean_text' | 'detect_emotion' | 'categorize_text' | 'summarize' | 'translate';
 
 export type FlowStep = {
   id: string;
@@ -40,6 +40,12 @@ export const STEP_CONFIGS: Record<StepType, StepConfig> = {
     label: 'Summarize',
     icon: '📝',
     description: 'Generate a concise summary',
+  },
+  translate: {
+    type: 'translate',
+    label: 'Translate',
+    icon: '🌐',
+    description: 'Translate text to another language',
   },
 };
 

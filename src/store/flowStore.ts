@@ -24,6 +24,7 @@ type FlowState = {
   isRunning: boolean;
   showResults: boolean;
   results: FlowResult | null;
+  selectedLanguage: string;
   setInput: (value: string) => void;
   setSteps: (steps: FlowStep[]) => void;
   updateStepStatus: (id: string, status: StepStatus) => void;
@@ -31,10 +32,11 @@ type FlowState = {
   reorderSteps: (fromIndex: number, toIndex: number) => void;
   resetAllStatuses: () => void;
   closeResults: () => void;
+  setSelectedLanguage: (lang: string) => void;
   runFlow: () => Promise<void>;
 };
 
-// Quotes based on emotion
+// Quotes based on emotion - English
 const EMOTION_QUOTES: Record<string, { quote: string; author: string }[]> = {
   stressed: [
     { quote: "Almost everything will work again if you unplug it for a few minutes, including you.", author: "Anne Lamott" },
@@ -61,6 +63,80 @@ const EMOTION_QUOTES: Record<string, { quote: string; author: string }[]> = {
     { quote: "Life is what happens when you're busy making other plans.", author: "John Lennon" },
     { quote: "Be yourself; everyone else is already taken.", author: "Oscar Wilde" },
   ],
+};
+
+// Multilingual quotes
+const MULTILINGUAL_QUOTES: Record<string, Record<string, { quote: string; author: string }[]>> = {
+  stressed: {
+    ta: [
+      { quote: "கடினமான நேரங்களில் வாய்ப்பு உள்ளது.", author: "Albert Einstein" },
+      { quote: "மன அழுத்தத்தை எதிர்கொள்ள சிறந்த ஆயுதம் நம் எண்ணங்களைத் தேர்ந்தெடுக்கும் திறன்.", author: "William James" },
+    ],
+    hi: [
+      { quote: "कठिनाई के बीच में अवसर होता है.", author: "Albert Einstein" },
+      { quote: "तनाव के खिलाफ सबसे बड़ा हथियार हमारी सोच चुनने की क्षमता है.", author: "William James" },
+    ],
+    es: [
+      { quote: "En medio de la dificultad yace la oportunidad.", author: "Albert Einstein" },
+      { quote: "El mayor arma contra el estrés es nuestra capacidad de elegir un pensamiento sobre otro.", author: "William James" },
+    ],
+  },
+  happy: {
+    ta: [
+      { quote: "மகிழ்ச்சி என்பது தயாராக கிடைக்கும் ஒன்றல்ல. அது உங்கள் செயல்களிலிருந்து வருகிறது.", author: "Dalai Lama" },
+      { quote: "நம் வாழ்க்கையின் நோக்கம் மகிழ்ச்சியாக இருக்க வேண்டும்.", author: "Dalai Lama" },
+    ],
+    hi: [
+      { quote: "खुशी तैयार नहीं मिलती, यह आपके कार्यों से आती है.", author: "Dalai Lama" },
+      { quote: "हमारे जीवन का उद्देश्य खुश रहना है.", author: "Dalai Lama" },
+    ],
+    es: [
+      { quote: "La felicidad no es algo ya hecho. Viene de tus propias acciones.", author: "Dalai Lama" },
+      { quote: "El propósito de nuestras vidas es ser felices.", author: "Dalai Lama" },
+    ],
+  },
+  sad: {
+    ta: [
+      { quote: "ஒவ்வொரு நாளும் நல்லதாக இருக்காது, ஆனால் ஒவ்வொரு நாளிலும் நல்லது ஒன்று இருக்கும்.", author: "Alice Morse Earle" },
+      { quote: "நட்சத்திரங்கள் இருளில்லாமல் பிரகாசிக்க முடியாது.", author: "D.H. Sidebottom" },
+    ],
+    hi: [
+      { quote: "हर दिन अच्छा नहीं हो सकता, लेकिन हर दिन में कुछ अच्छा होता है.", author: "Alice Morse Earle" },
+      { quote: "तारे अंधकार के बिना चमक नहीं सकते.", author: "D.H. Sidebottom" },
+    ],
+    es: [
+      { quote: "No todos los días pueden ser buenos, pero hay algo bueno en cada día.", author: "Alice Morse Earle" },
+      { quote: "Las estrellas no pueden brillar sin oscuridad.", author: "D.H. Sidebottom" },
+    ],
+  },
+  angry: {
+    ta: [
+      { quote: "நீங்கள் கோபமாக இருக்கும் ஒவ்வொரு நிமிடமும், நீங்கள் அமைதியின் அறுபது வினாடிகளை இழக்கிறீர்கள்.", author: "Ralph Waldo Emerson" },
+      { quote: "கோபத்தை வைத்திருப்பது விஷத்தை குடித்து மற்றவர் இறக்க எதிர்பார்ப்பது போன்றது.", author: "Buddha" },
+    ],
+    hi: [
+      { quote: "आप जितने मिनट क्रोधित रहते हैं, उतने ही मिनट शांति खो देते हैं.", author: "Ralph Waldo Emerson" },
+      { quote: "क्रोध को पकड़े रखना जहर पीकर दूसरे के मरने की उम्मीद करने जैसा है.", author: "Buddha" },
+    ],
+    es: [
+      { quote: "Por cada minuto que permaneces enojado, renuncias a sesenta segundos de paz mental.", author: "Ralph Waldo Emerson" },
+      { quote: "Aferrarse a la ira es como beber veneno y esperar que la otra persona muera.", author: "Buddha" },
+    ],
+  },
+  neutral: {
+    ta: [
+      { quote: "சிறந்த வேலையைச் செய்ய ஒரே வழி, நீங்கள் செய்வதை நேசிப்பது.", author: "Steve Jobs" },
+      { quote: "வாழ்க்கை என்பது நீங்கள் வேறு திட்டங்களை உருவாக்கும்போது நடக்கும் விஷயம்.", author: "John Lennon" },
+    ],
+    hi: [
+      { quote: "महान काम करने का एकमात्र तरीका है कि आप जो करते हैं उसे प्यार करें.", author: "Steve Jobs" },
+      { quote: "जीवन वह है जो तब होता है जब आप अन्य योजनाएं बना रहे होते हैं.", author: "John Lennon" },
+    ],
+    es: [
+      { quote: "La única forma de hacer un gran trabajo es amar lo que haces.", author: "Steve Jobs" },
+      { quote: "La vida es lo que sucede mientras estás ocupado haciendo otros planes.", author: "John Lennon" },
+    ],
+  },
 };
 
 // Simulated emotion detection
@@ -114,12 +190,35 @@ const summarizeText = (text: string): string => {
   return words.slice(0, 10).join(' ') + '...';
 };
 
+// Language names mapping
+const LANGUAGE_NAMES: Record<string, string> = {
+  en: 'English',
+  ta: 'Tamil',
+  hi: 'Hindi',
+  es: 'Spanish',
+  fr: 'French',
+  de: 'German',
+  ja: 'Japanese',
+  zh: 'Chinese',
+  ko: 'Korean',
+  ar: 'Arabic',
+  pt: 'Portuguese',
+};
+
+// Simulated translation
+const translateText = (text: string, targetLang: string): string => {
+  // Simulate translation - in real app, this would call translation API
+  const langName = LANGUAGE_NAMES[targetLang] || 'English';
+  return `[Translated to ${langName}] ${text}`;
+};
+
 // Initialize with default steps
 const createDefaultSteps = (): FlowStep[] => [
   { id: uuid(), type: 'clean_text', label: STEP_CONFIGS.clean_text.label, status: 'idle' },
   { id: uuid(), type: 'detect_emotion', label: STEP_CONFIGS.detect_emotion.label, status: 'idle' },
   { id: uuid(), type: 'categorize_text', label: STEP_CONFIGS.categorize_text.label, status: 'idle' },
   { id: uuid(), type: 'summarize', label: STEP_CONFIGS.summarize.label, status: 'idle' },
+  { id: uuid(), type: 'translate', label: STEP_CONFIGS.translate.label, status: 'idle' },
 ];
 
 export const useFlowStore = create<FlowState>((set, get) => ({
@@ -128,6 +227,7 @@ export const useFlowStore = create<FlowState>((set, get) => ({
   isRunning: false,
   showResults: false,
   results: null,
+  selectedLanguage: 'en',
 
   setInput: (value: string) => set({ input: value }),
 
@@ -159,6 +259,8 @@ export const useFlowStore = create<FlowState>((set, get) => ({
     })),
 
   closeResults: () => set({ showResults: false }),
+
+  setSelectedLanguage: (lang: string) => set({ selectedLanguage: lang }),
 
   runFlow: async () => {
     const { steps, input, updateStepStatus } = get();
@@ -202,6 +304,10 @@ export const useFlowStore = create<FlowState>((set, get) => ({
           summary = summarizeText(cleanedText);
           output = summary;
           break;
+        case 'translate':
+          cleanedText = translateText(cleanedText, get().selectedLanguage);
+          output = cleanedText;
+          break;
       }
 
       stepResults.push({ stepType: step.type, output });
@@ -217,8 +323,11 @@ export const useFlowStore = create<FlowState>((set, get) => ({
       }
     }
     
-    // Get a random quote based on emotion
-    const quotes = EMOTION_QUOTES[detectedEmotion] || EMOTION_QUOTES.neutral;
+    // Get a random quote based on emotion and selected language
+    const { selectedLanguage } = get();
+    const multilingualQuotes = MULTILINGUAL_QUOTES[detectedEmotion]?.[selectedLanguage];
+    const englishQuotes = EMOTION_QUOTES[detectedEmotion] || EMOTION_QUOTES.neutral;
+    const quotes = multilingualQuotes || englishQuotes;
     const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
 
     // Set results

@@ -5,7 +5,7 @@ type TextInputPanelProps = {
 };
 
 function TextInputPanel({ onRunFlow }: TextInputPanelProps) {
-  const { input, setInput, runFlow, isRunning, steps } = useFlowStore();
+  const { input, setInput, runFlow, isRunning, steps, selectedLanguage, setSelectedLanguage } = useFlowStore();
 
   const handleRunFlow = () => {
     if (!isRunning && input.trim() && steps.length > 0) {
@@ -59,6 +59,35 @@ function TextInputPanel({ onRunFlow }: TextInputPanelProps) {
           <span>{input.length} characters</span>
           <span>{input.trim() ? input.trim().split(/\s+/).length : 0} words</span>
         </div>
+      </div>
+
+      {/* Language Selection */}
+      <div className="px-3 sm:px-4 pb-3 sm:pb-4 flex-shrink-0">
+        <label className="text-sm font-medium text-coal-300 mb-2 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-ember-500"></span>
+          Translate To
+        </label>
+        <select
+          value={selectedLanguage}
+          onChange={(e) => setSelectedLanguage(e.target.value)}
+          disabled={isRunning}
+          className="w-full bg-coal-900 border border-coal-700 rounded-xl p-3 
+                   text-coal-100 focus:outline-none focus:border-ember-500/50 
+                   focus:ring-2 focus:ring-ember-500/20 transition-all duration-200
+                   touch-manipulation"
+        >
+          <option value="en">🇺🇸 English</option>
+          <option value="ta">🇮🇳 தமிழ் (Tamil)</option>
+          <option value="hi">🇮🇳 हिंदी (Hindi)</option>
+          <option value="es">🇪🇸 Español (Spanish)</option>
+          <option value="fr">🇫🇷 Français (French)</option>
+          <option value="de">🇩🇪 Deutsch (German)</option>
+          <option value="ja">🇯🇵 日本語 (Japanese)</option>
+          <option value="zh">🇨🇳 中文 (Chinese)</option>
+          <option value="ko">🇰🇷 한국어 (Korean)</option>
+          <option value="ar">🇸🇦 العربية (Arabic)</option>
+          <option value="pt">🇵🇹 Português (Portuguese)</option>
+        </select>
       </div>
 
       {/* Run Button - Extra padding on mobile for bottom nav */}
