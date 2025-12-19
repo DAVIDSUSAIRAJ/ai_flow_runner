@@ -55,8 +55,9 @@ function DraggableStepItem({ step, index, moveStep, onDelete, isRunning }: Dragg
     <div
       ref={ref}
       className={`
-        group relative flex items-center gap-3 p-3 rounded-xl
+        group relative flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-xl
         bg-coal-900 border transition-all duration-200 cursor-grab active:cursor-grabbing
+        touch-manipulation min-h-[60px] sm:min-h-[70px]
         ${isDragging 
           ? 'opacity-50 scale-105 border-ember-500 shadow-lg shadow-ember-500/20' 
           : isOver
@@ -69,7 +70,7 @@ function DraggableStepItem({ step, index, moveStep, onDelete, isRunning }: Dragg
     >
       {/* Drag Handle */}
       <div className={`
-        flex flex-col gap-0.5 text-coal-500 
+        flex flex-col gap-0.5 text-coal-500 flex-shrink-0
         ${isRunning ? 'opacity-30' : 'group-hover:text-coal-400'}
       `}>
         <div className="flex gap-0.5">
@@ -87,25 +88,25 @@ function DraggableStepItem({ step, index, moveStep, onDelete, isRunning }: Dragg
       </div>
 
       {/* Step Number */}
-      <div className="w-6 h-6 rounded-lg bg-coal-800 flex items-center justify-center text-xs font-mono text-coal-400">
+      <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-coal-800 flex items-center justify-center text-xs font-mono text-coal-400 flex-shrink-0">
         {index + 1}
       </div>
 
       {/* Icon */}
-      <div className="w-8 h-8 rounded-lg bg-coal-800 flex items-center justify-center text-base">
+      <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-coal-800 flex items-center justify-center text-base sm:text-lg flex-shrink-0">
         {config.icon}
       </div>
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <h4 className="text-sm font-medium text-coal-200 truncate">{step.label}</h4>
-        <p className="text-xs text-coal-500 truncate">{config.description}</p>
+        <h4 className="text-sm sm:text-base font-medium text-coal-200 truncate">{step.label}</h4>
+        <p className="text-xs text-coal-500 truncate hidden sm:block">{config.description}</p>
       </div>
 
       {/* Status Indicator */}
-      <div className={`w-2.5 h-2.5 rounded-full ${statusColors[step.status]}`} />
+      <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${statusColors[step.status]} flex-shrink-0`} />
 
-      {/* Delete Button */}
+      {/* Delete Button - Always visible on mobile */}
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -113,15 +114,17 @@ function DraggableStepItem({ step, index, moveStep, onDelete, isRunning }: Dragg
         }}
         disabled={isRunning}
         className={`
-          p-1.5 rounded-lg transition-all duration-200
+          p-2 sm:p-1.5 rounded-lg transition-all duration-200 flex-shrink-0
+          touch-manipulation min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0
+          flex items-center justify-center
           ${isRunning 
-            ? 'opacity-0 cursor-not-allowed' 
-            : 'opacity-0 group-hover:opacity-100 hover:bg-rose-500/20 text-coal-500 hover:text-rose-400'
+            ? 'opacity-30 cursor-not-allowed' 
+            : 'sm:opacity-0 sm:group-hover:opacity-100 hover:bg-rose-500/20 text-coal-500 hover:text-rose-400 active:bg-rose-500/30'
           }
         `}
         title="Remove step"
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-5 h-5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
         </svg>
       </button>
@@ -130,4 +133,3 @@ function DraggableStepItem({ step, index, moveStep, onDelete, isRunning }: Dragg
 }
 
 export default DraggableStepItem;
-

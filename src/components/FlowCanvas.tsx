@@ -20,19 +20,20 @@ const nodeTypes = {
 function FlowCanvas() {
   const { steps } = useFlowStore();
 
-  // Generate nodes from steps
+  // Generate nodes from steps - responsive spacing
   const initialNodes: Node[] = useMemo(() => {
-    const startX = 100;
-    const startY = 100;
-    const horizontalSpacing = 280;
-    const verticalSpacing = 150;
-    const nodesPerRow = 2;
+    const isMobile = window.innerWidth < 1024;
+    const startX = isMobile ? 50 : 100;
+    const startY = isMobile ? 50 : 100;
+    const horizontalSpacing = isMobile ? 200 : 280;
+    const verticalSpacing = isMobile ? 120 : 150;
+    const nodesPerRow = isMobile ? 1 : 2;
 
     return steps.map((step, index) => {
       const row = Math.floor(index / nodesPerRow);
       const col = index % nodesPerRow;
       
-      // Create a zigzag pattern
+      // Create a zigzag pattern (vertical on mobile)
       const x = startX + (col * horizontalSpacing);
       const y = startY + (row * verticalSpacing);
 
@@ -128,8 +129,8 @@ function FlowCanvas() {
 
   return (
     <div className="w-full h-full flow-canvas-bg">
-      {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-10 p-4 pointer-events-none">
+      {/* Header - Hidden on mobile */}
+      <div className="hidden lg:block absolute top-0 left-0 right-0 z-10 p-4 pointer-events-none">
         <div className="flex items-center justify-between">
           <div className="pointer-events-auto bg-coal-900/90 backdrop-blur-sm rounded-xl px-4 py-2 border border-coal-800">
             <h2 className="text-sm font-medium text-coal-300">Flow Visualization</h2>
@@ -156,16 +157,23 @@ function FlowCanvas() {
         </div>
       </div>
 
+      {/* Mobile Header */}
+      <div className="lg:hidden absolute top-0 left-0 right-0 z-10 p-2 pointer-events-none">
+        <div className="pointer-events-auto bg-coal-900/90 backdrop-blur-sm rounded-lg px-3 py-1.5 border border-coal-800">
+          <h2 className="text-xs font-medium text-coal-300">Flow Visualization</h2>
+        </div>
+      </div>
+
       {steps.length === 0 ? (
-        <div className="w-full h-full flex items-center justify-center">
+        <div className="w-full h-full flex items-center justify-center p-4">
           <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-coal-800 flex items-center justify-center">
-              <svg className="w-8 h-8 text-coal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-xl sm:rounded-2xl bg-coal-800 flex items-center justify-center">
+              <svg className="w-6 h-6 sm:w-8 sm:h-8 text-coal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
             </div>
-            <h3 className="text-coal-300 font-medium mb-1">No Steps in Flow</h3>
-            <p className="text-coal-500 text-sm">Add steps from the right panel to get started</p>
+            <h3 className="text-sm sm:text-base text-coal-300 font-medium mb-1">No Steps in Flow</h3>
+            <p className="text-xs sm:text-sm text-coal-500">Add steps from the steps tab</p>
           </div>
         </div>
       ) : (
@@ -177,9 +185,11 @@ function FlowCanvas() {
           nodeTypes={nodeTypes}
           connectionMode={ConnectionMode.Loose}
           fitView
-          fitViewOptions={{ padding: 0.3 }}
+          fitViewOptions={{ padding: 0.2 }}
           proOptions={{ hideAttribution: true }}
           className="bg-coal-950"
+          panOnScroll={true}
+          panOnDrag={true}
         >
           <Background 
             variant={BackgroundVariant.Dots} 
@@ -198,4 +208,3 @@ function FlowCanvas() {
 }
 
 export default FlowCanvas;
-
