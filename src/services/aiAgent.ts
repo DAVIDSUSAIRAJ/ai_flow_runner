@@ -39,7 +39,7 @@ export const callAIAgent = async (
   stepType?: string
 ): Promise<string> => {
   try {
-    const response = await fetch('https://book-rag-ai-backend.onrender.com/chat', {
+    const response = await fetch('https://ai-flow-runner-backend.onrender.com/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
