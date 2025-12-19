@@ -1,6 +1,13 @@
 import { create } from 'zustand';
 import { v4 as uuid } from 'uuid';
 import { FlowStep, StepStatus, STEP_CONFIGS, StepType } from '../types';
+import { 
+  processStepWithAI, 
+  formatEmotionResult, 
+  formatCategoryResult,
+  ChatHistory,
+  ChatMessage 
+} from '../services/aiAgent';
 
 // Simulated AI results for demo
 type StepResult = {
@@ -25,6 +32,7 @@ type FlowState = {
   showResults: boolean;
   results: FlowResult | null;
   selectedLanguage: string;
+  chatHistory: ChatHistory;
   setInput: (value: string) => void;
   setSteps: (steps: FlowStep[]) => void;
   updateStepStatus: (id: string, status: StepStatus) => void;
@@ -33,6 +41,8 @@ type FlowState = {
   resetAllStatuses: () => void;
   closeResults: () => void;
   setSelectedLanguage: (lang: string) => void;
+  addToChatHistory: (message: ChatMessage) => void;
+  clearChatHistory: () => void;
   runFlow: () => Promise<void>;
 };
 
@@ -139,78 +149,7 @@ const MULTILINGUAL_QUOTES: Record<string, Record<string, { quote: string; author
   },
 };
 
-// Simulated emotion detection
-const detectEmotionFromText = (text: string): string => {
-  const lowerText = text.toLowerCase();
-  if (lowerText.includes('stress') || lowerText.includes('overwhelm') || lowerText.includes('anxious') || lowerText.includes('worried')) {
-    return 'stressed';
-  }
-  if (lowerText.includes('happy') || lowerText.includes('joy') || lowerText.includes('excited') || lowerText.includes('great')) {
-    return 'happy';
-  }
-  if (lowerText.includes('sad') || lowerText.includes('depressed') || lowerText.includes('down') || lowerText.includes('lonely')) {
-    return 'sad';
-  }
-  if (lowerText.includes('angry') || lowerText.includes('frustrated') || lowerText.includes('annoyed') || lowerText.includes('hate')) {
-    return 'angry';
-  }
-  return 'neutral';
-};
-
-// Simulated category detection
-const detectCategoryFromText = (text: string): string => {
-  const lowerText = text.toLowerCase();
-  if (lowerText.includes('work') || lowerText.includes('job') || lowerText.includes('boss') || lowerText.includes('office')) {
-    return 'Work & Career';
-  }
-  if (lowerText.includes('family') || lowerText.includes('parent') || lowerText.includes('child') || lowerText.includes('spouse')) {
-    return 'Family & Relationships';
-  }
-  if (lowerText.includes('health') || lowerText.includes('sick') || lowerText.includes('doctor') || lowerText.includes('exercise')) {
-    return 'Health & Wellness';
-  }
-  if (lowerText.includes('money') || lowerText.includes('finance') || lowerText.includes('debt') || lowerText.includes('salary')) {
-    return 'Finance & Money';
-  }
-  return 'Personal & General';
-};
-
-// Simulated text cleaning
-const cleanText = (text: string): string => {
-  return text
-    .replace(/\s+/g, ' ')
-    .replace(/[^\w\s.,!?'-]/g, '')
-    .trim();
-};
-
-// Simulated summary
-const summarizeText = (text: string): string => {
-  const words = text.split(' ');
-  if (words.length <= 10) return text;
-  return words.slice(0, 10).join(' ') + '...';
-};
-
-// Language names mapping
-const LANGUAGE_NAMES: Record<string, string> = {
-  en: 'English',
-  ta: 'Tamil',
-  hi: 'Hindi',
-  es: 'Spanish',
-  fr: 'French',
-  de: 'German',
-  ja: 'Japanese',
-  zh: 'Chinese',
-  ko: 'Korean',
-  ar: 'Arabic',
-  pt: 'Portuguese',
-};
-
-// Simulated translation
-const translateText = (text: string, targetLang: string): string => {
-  // Simulate translation - in real app, this would call translation API
-  const langName = LANGUAGE_NAMES[targetLang] || 'English';
-  return `[Translated to ${langName}] ${text}`;
-};
+// Note: Simulated functions removed - now using AI agent service
 
 // Initialize with default steps
 const createDefaultSteps = (): FlowStep[] => [
@@ -228,6 +167,7 @@ export const useFlowStore = create<FlowState>((set, get) => ({
   showResults: false,
   results: null,
   selectedLanguage: 'en',
+  chatHistory: [],
 
   setInput: (value: string) => set({ input: value }),
 
@@ -262,8 +202,15 @@ export const useFlowStore = create<FlowState>((set, get) => ({
 
   setSelectedLanguage: (lang: string) => set({ selectedLanguage: lang }),
 
+  addToChatHistory: (message: ChatMessage) =>
+    set((state) => ({
+      chatHistory: [...state.chatHistory, message],
+    })),
+
+  clearChatHistory: () => set({ chatHistory: [] }),
+
   runFlow: async () => {
-    const { steps, input, updateStepStatus } = get();
+    const { steps, input, updateStepStatus, selectedLanguage, chatHistory, addToChatHistory } = get();
     
     if (!input.trim() || steps.length === 0) return;
     
@@ -272,77 +219,110 @@ export const useFlowStore = create<FlowState>((set, get) => ({
     // Reset all statuses first
     get().resetAllStatuses();
     
+    // Add user input to chat history
+    addToChatHistory({ role: 'user', content: input });
+    
     const stepResults: StepResult[] = [];
-    let cleanedText = input;
+    let processedText = input;
     let detectedEmotion = 'neutral';
     let category = 'General';
     let summary = input;
+    let currentHistory: ChatHistory = [...chatHistory];
 
-    // Simulate running each step sequentially
-    for (const step of steps) {
-      updateStepStatus(step.id, 'running');
-      
-      // Simulate API call delay (1-2 seconds per step)
-      await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 1000));
-      
-      // Process based on step type
-      let output = '';
-      switch (step.type) {
-        case 'clean_text':
-          cleanedText = cleanText(input);
-          output = cleanedText;
-          break;
-        case 'detect_emotion':
-          detectedEmotion = detectEmotionFromText(cleanedText);
-          output = `Detected: ${detectedEmotion.charAt(0).toUpperCase() + detectedEmotion.slice(1)}`;
-          break;
-        case 'categorize_text':
-          category = detectCategoryFromText(cleanedText);
-          output = category;
-          break;
-        case 'summarize':
-          summary = summarizeText(cleanedText);
-          output = summary;
-          break;
-        case 'translate':
-          cleanedText = translateText(cleanedText, get().selectedLanguage);
-          output = cleanedText;
-          break;
-      }
+    try {
+      // Run each step sequentially with AI agent
+      for (const step of steps) {
+        updateStepStatus(step.id, 'running');
+        
+        try {
+          // Process step with AI agent
+          const aiResponse = await processStepWithAI(
+            step.type,
+            processedText,
+            selectedLanguage,
+            currentHistory
+          );
+          
+          let output = '';
+          
+          // Process based on step type
+          switch (step.type) {
+            case 'clean_text':
+              processedText = aiResponse.trim();
+              output = processedText;
+              break;
+            
+            case 'detect_emotion':
+              detectedEmotion = formatEmotionResult(aiResponse).toLowerCase();
+              output = `Detected: ${formatEmotionResult(aiResponse)}`;
+              break;
+            
+            case 'categorize_text':
+              category = formatCategoryResult(aiResponse);
+              output = category;
+              break;
+            
+            case 'summarize':
+              summary = aiResponse.trim();
+              output = summary;
+              processedText = summary; // Update processed text for next steps
+              break;
+            
+            case 'translate':
+              processedText = aiResponse.trim();
+              output = processedText;
+              break;
+            
+            default:
+              output = aiResponse;
+          }
 
-      stepResults.push({ stepType: step.type, output });
-      
-      // 95% success rate for demo (was 90%)
-      const success = Math.random() > 0.05;
-      updateStepStatus(step.id, success ? 'done' : 'error');
-      
-      // If a step fails, stop the flow
-      if (!success) {
-        set({ isRunning: false });
-        return;
+          stepResults.push({ stepType: step.type, output });
+          
+          // Add AI response to chat history
+          addToChatHistory({ role: 'assistant', content: output });
+          currentHistory = get().chatHistory;
+          
+          updateStepStatus(step.id, 'done');
+          
+        } catch (error) {
+          console.error(`Error processing step ${step.type}:`, error);
+          stepResults.push({ 
+            stepType: step.type, 
+            output: `Error: ${error instanceof Error ? error.message : 'Unknown error'}` 
+          });
+          updateStepStatus(step.id, 'error');
+          
+          // Stop flow on error
+          set({ isRunning: false });
+          return;
+        }
       }
+      
+      // Get a random quote based on emotion and selected language
+      const multilingualQuotes = MULTILINGUAL_QUOTES[detectedEmotion]?.[selectedLanguage];
+      const englishQuotes = EMOTION_QUOTES[detectedEmotion] || EMOTION_QUOTES.neutral;
+      const quotes = multilingualQuotes || englishQuotes;
+      const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+
+      // Set results
+      set({
+        isRunning: false,
+        showResults: true,
+        results: {
+          originalInput: input,
+          stepResults,
+          detectedEmotion,
+          category,
+          summary,
+          quote: randomQuote.quote,
+          quoteAuthor: randomQuote.author,
+        },
+      });
+      
+    } catch (error) {
+      console.error('Flow execution error:', error);
+      set({ isRunning: false });
     }
-    
-    // Get a random quote based on emotion and selected language
-    const { selectedLanguage } = get();
-    const multilingualQuotes = MULTILINGUAL_QUOTES[detectedEmotion]?.[selectedLanguage];
-    const englishQuotes = EMOTION_QUOTES[detectedEmotion] || EMOTION_QUOTES.neutral;
-    const quotes = multilingualQuotes || englishQuotes;
-    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-
-    // Set results
-    set({
-      isRunning: false,
-      showResults: true,
-      results: {
-        originalInput: input,
-        stepResults,
-        detectedEmotion,
-        category,
-        summary,
-        quote: randomQuote.quote,
-        quoteAuthor: randomQuote.author,
-      },
-    });
   },
 }));
