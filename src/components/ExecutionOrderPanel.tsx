@@ -41,7 +41,7 @@ function ExecutionOrderPanel() {
         </div>
         <p className="text-xs text-coal-500">
           <span className="hidden lg:inline">Drag to reorder • </span>
-          <span className="lg:hidden">Use ↑↓ buttons to reorder • </span>
+          <span className="lg:hidden">Touch & drag or use ↑↓ buttons • </span>
           Steps run top to bottom
         </p>
       </div>
