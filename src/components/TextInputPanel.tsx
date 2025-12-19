@@ -53,8 +53,8 @@ function TextInputPanel() {
         </div>
       </div>
 
-      {/* Run Button */}
-      <div className="p-3 sm:p-4 border-t border-coal-800 flex-shrink-0">
+      {/* Run Button - Extra padding on mobile for bottom nav */}
+      <div className="p-3 sm:p-4 border-t border-coal-800 flex-shrink-0 pb-20 lg:pb-3 sm:pb-4 bg-coal-950">
         <button
           onClick={handleRunFlow}
           disabled={isRunning || !input.trim() || steps.length === 0}
