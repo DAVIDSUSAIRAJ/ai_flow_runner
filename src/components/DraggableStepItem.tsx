@@ -162,7 +162,7 @@ function DraggableStepItem({ step, index, moveStep, onDelete, isRunning, totalSt
       {/* Status Indicator */}
       <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${statusColors[step.status]} flex-shrink-0`} />
 
-      {/* Delete Button - Always visible on mobile */}
+      {/* Delete Button - Always visible */}
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -175,7 +175,7 @@ function DraggableStepItem({ step, index, moveStep, onDelete, isRunning, totalSt
           flex items-center justify-center
           ${isRunning 
             ? 'opacity-30 cursor-not-allowed' 
-            : 'sm:opacity-0 sm:group-hover:opacity-100 hover:bg-rose-500/20 text-coal-500 hover:text-rose-400 active:bg-rose-500/30'
+            : 'hover:bg-rose-500/20 text-coal-500 hover:text-rose-400 active:bg-rose-500/30'
           }
         `}
         title="Remove step"

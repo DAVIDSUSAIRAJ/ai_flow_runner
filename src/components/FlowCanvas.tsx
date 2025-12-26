@@ -131,23 +131,15 @@ function FlowCanvas() {
 
   // Sync nodes when steps array changes (add/remove/reorder)
   useEffect(() => {
-    const existingNodeIds = nodes.map(n => n.id);
-    const stepIds = steps.map(s => s.id);
-    
-    // Check if we need to rebuild nodes (steps added or removed)
-    const needsRebuild = 
-      existingNodeIds.length !== stepIds.length ||
-      !stepIds.every(id => existingNodeIds.includes(id));
-
-    if (needsRebuild) {
-      setNodes(initialNodes);
-      setEdges(initialEdges);
-    }
-  }, [steps.length, steps.map(s => s.id).join(',')]);
+    // Rebuild nodes and edges whenever the step order changes
+    setNodes(initialNodes);
+    setEdges(initialEdges);
+  }, [steps.map((s, i) => `${i}:${s.id}`).join(','), initialNodes, initialEdges, setNodes, setEdges]);
 
   const onConnect = useCallback(() => {
     // We don't allow manual connections - order is controlled by the side panel
   }, []);
+
 
   return (
     <div className="w-full h-full flow-canvas-bg">
