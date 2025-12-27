@@ -44,7 +44,7 @@ function TextInputPanel({ onRunFlow }: TextInputPanelProps) {
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Enter your text here... e.g., 'I feel stressed about my job and overwhelmed with tasks.'"
+            placeholder="Share your thoughts... e.g., 'I'm excited about starting my new project today!' or 'Feeling grateful for my supportive team.'"
             className="flex-1 min-h-[150px] sm:min-h-[200px] bg-coal-900 border border-coal-700 rounded-xl p-3 sm:p-4 
                      text-coal-100 placeholder-coal-600 resize-none
                      focus:outline-none focus:border-ember-500/50 focus:ring-2 focus:ring-ember-500/20
