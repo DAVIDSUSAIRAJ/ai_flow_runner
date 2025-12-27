@@ -121,3 +121,64 @@ export const formatCategoryResult = (result: string): string => {
   return 'Personal & General';
 };
 
+/**
+ * Generate a context-aware motivational quote using AI
+ * Returns an object with quote and author
+ */
+export const generateContextAwareQuote = async (
+  userInput: string,
+  emotion: string,
+  category: string,
+  language: string
+): Promise<{ quote: string; author: string }> => {
+  try {
+    const promptText = `Based on the user's input: "${userInput}"
+Detected emotion: ${emotion}
+Category: ${category}
+
+Generate a meaningful, context-aware motivational quote that:
+1. Directly relates to their specific situation and mindset
+2. Matches their ${emotion} emotion
+3. Is relevant to the ${category} context
+4. Provides genuine encouragement and perspective
+5. Is appropriate for the language: ${language}
+
+Format your response EXACTLY as:
+QUOTE: [the motivational quote]
+AUTHOR: [author name or "Anonymous"]
+
+Make it personal and meaningful, not generic.`;
+
+    const response = await callAIAgent(promptText, language, [], 'generate_quote');
+    
+    // Parse the response to extract quote and author
+    const quoteMatch = response.match(/QUOTE:\s*(.+?)(?=\nAUTHOR:|$)/s);
+    const authorMatch = response.match(/AUTHOR:\s*(.+?)$/s);
+    
+    if (quoteMatch && authorMatch) {
+      return {
+        quote: quoteMatch[1].trim().replace(/^["']|["']$/g, ''),
+        author: authorMatch[1].trim().replace(/^["']|["']$/g, ''),
+      };
+    }
+    
+    // Fallback parsing if format is different
+    const lines = response.split('\n').filter(line => line.trim());
+    if (lines.length >= 2) {
+      return {
+        quote: lines[0].replace(/^(QUOTE:|Quote:)\s*/i, '').trim().replace(/^["']|["']$/g, ''),
+        author: lines[lines.length - 1].replace(/^(AUTHOR:|Author:|-)\s*/i, '').trim().replace(/^["']|["']$/g, ''),
+      };
+    }
+    
+    // If parsing fails, return the whole response as quote
+    return {
+      quote: response.trim(),
+      author: 'AI Generated',
+    };
+  } catch (error) {
+    console.error('Error generating context-aware quote:', error);
+    throw error;
+  }
+};
+

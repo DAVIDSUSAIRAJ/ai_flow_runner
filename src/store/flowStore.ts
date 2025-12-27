@@ -5,6 +5,7 @@ import {
   processStepWithAI, 
   formatEmotionResult, 
   formatCategoryResult,
+  generateContextAwareQuote,
   ChatHistory,
   ChatMessage 
 } from '../services/aiAgent';
@@ -299,11 +300,31 @@ export const useFlowStore = create<FlowState>((set, get) => ({
         }
       }
       
-      // Get a random quote based on emotion and selected language
-      const multilingualQuotes = MULTILINGUAL_QUOTES[detectedEmotion]?.[selectedLanguage];
-      const englishQuotes = EMOTION_QUOTES[detectedEmotion] || EMOTION_QUOTES.neutral;
-      const quotes = multilingualQuotes || englishQuotes;
-      const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+      // Generate context-aware quote using AI
+      let quote = '';
+      let quoteAuthor = '';
+      
+      try {
+        // Try to generate dynamic, context-aware quote from AI
+        const aiQuote = await generateContextAwareQuote(
+          input,
+          detectedEmotion,
+          category,
+          selectedLanguage
+        );
+        quote = aiQuote.quote;
+        quoteAuthor = aiQuote.author;
+      } catch (error) {
+        console.error('Error generating AI quote, falling back to static quotes:', error);
+        
+        // Fallback to static quotes if AI generation fails
+        const multilingualQuotes = MULTILINGUAL_QUOTES[detectedEmotion]?.[selectedLanguage];
+        const englishQuotes = EMOTION_QUOTES[detectedEmotion] || EMOTION_QUOTES.neutral;
+        const quotes = multilingualQuotes || englishQuotes;
+        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        quote = randomQuote.quote;
+        quoteAuthor = randomQuote.author;
+      }
 
       // Set results
       set({
@@ -315,8 +336,8 @@ export const useFlowStore = create<FlowState>((set, get) => ({
           detectedEmotion,
           category,
           summary,
-          quote: randomQuote.quote,
-          quoteAuthor: randomQuote.author,
+          quote,
+          quoteAuthor,
         },
       });
       
