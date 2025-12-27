@@ -145,7 +145,7 @@ Generate a meaningful, context-aware motivational quote that:
 
 Format your response EXACTLY as:
 QUOTE: [the motivational quote]
-AUTHOR: [author name or "Anonymous"]
+AUTHOR: [famous author name if applicable, or "Suggested by David"]
 
 Make it personal and meaningful, not generic.`;
 
@@ -174,7 +174,7 @@ Make it personal and meaningful, not generic.`;
     // If parsing fails, return the whole response as quote
     return {
       quote: response.trim(),
-      author: 'AI Generated',
+      author: 'Suggested by David',
     };
   } catch (error) {
     console.error('Error generating context-aware quote:', error);
