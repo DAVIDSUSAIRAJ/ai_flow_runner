@@ -152,6 +152,45 @@ const MULTILINGUAL_QUOTES: Record<string, Record<string, { quote: string; author
 
 // Note: Simulated functions removed - now using AI agent service
 
+// Function to get or create session ID
+const getSessionId = () => {
+  let sessionId = sessionStorage.getItem('aiflow_session_id');
+  if (!sessionId) {
+    sessionId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    sessionStorage.setItem('aiflow_session_id', sessionId);
+  }
+  return sessionId;
+};
+
+// Function to send data to n8n webhook
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const sendToN8N = async (input: any) => {
+  try {
+    const response = await fetch('https://n8n-t2i5.onrender.com/webhook-test/ai-runnner-flow', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userInput: input,
+        sessionId: getSessionId()
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`N8N webhook failed: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('N8N webhook response:', data);
+    return data;
+  } catch (error) {
+    console.error('Error sending to N8N:', error);
+    // Don't throw error - allow flow to continue even if webhook fails
+    return null;
+  }
+};
+
 // Initialize with default steps
 const createDefaultSteps = (): FlowStep[] => [
   { id: uuid(), type: 'clean_text', label: STEP_CONFIGS.clean_text.label, status: 'idle' },
@@ -219,6 +258,9 @@ export const useFlowStore = create<FlowState>((set, get) => ({
     
     // Reset all statuses first
     get().resetAllStatuses();
+    
+    // Send data to n8n webhook
+    await sendToN8N(input);
     
     // Add user input to chat history
     addToChatHistory({ role: 'user', content: input });
