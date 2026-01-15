@@ -9,18 +9,21 @@ const emotionEmojis: Record<string, string> = {
   neutral: '😐',
 };
 
-const emotionColors: Record<string, string> = {
-  stressed: 'from-amber-500 to-orange-600',
-  happy: 'from-emerald-400 to-green-500',
-  sad: 'from-blue-400 to-indigo-500',
-  angry: 'from-red-500 to-rose-600',
-  neutral: 'from-slate-400 to-gray-500',
-};
-
 function ResultsModal() {
   const { showResults, results, closeResults } = useFlowStore();
 
   if (!showResults || !results) return null;
+
+  // Use n8n results from store or fallback to mock data
+  const n8nData = results.n8nResults || {
+    input: "I was very good",
+    language: "en",
+    clean_text: "I was very good.",
+    detect_emotion: "Happy",
+    categorize_text: "Personal & General",
+    summarize: "The speaker expresses positive self-assessment. They feel they were very good.",
+    translate: "Keep up that positive energy! Your good work makes a difference."
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-hidden">
@@ -30,115 +33,116 @@ function ResultsModal() {
         onClick={closeResults}
       />
 
-      {/* Modal - with max height and scroll */}
-      <div className="relative w-full max-w-2xl max-h-[90vh] bg-coal-900 rounded-3xl border border-coal-700 shadow-2xl animate-slide-up flex flex-col overflow-hidden">
-        {/* Gradient Header - Fixed */}
-        <div className={`bg-gradient-to-r ${emotionColors[results.detectedEmotion]} p-4 sm:p-6 flex-shrink-0`}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="text-3xl sm:text-4xl">{emotionEmojis[results.detectedEmotion]}</span>
-              <div>
-                <h2 className="text-lg sm:text-xl font-bold text-white">Flow Complete!</h2>
-                <p className="text-white/80 text-xs sm:text-sm">
-                  Processed through {results.stepResults.length} steps
-                </p>
-              </div>
+      {/* Modal Container - Side by Side */}
+      <div className="relative w-full max-w-7xl max-h-[90vh] bg-coal-950 rounded-2xl p-6 animate-slide-up flex flex-col overflow-hidden">
+        {/* Header with Close Button */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <span className="text-3xl">{emotionEmojis[results.detectedEmotion]}</span>
+            <div>
+              <h2 className="text-xl font-bold text-white">Flow Complete!</h2>
+              <p className="text-coal-400 text-sm">
+                {results.n8nEnabled ? 'Compare Frontend vs N8N Results' : 'Frontend Results'}
+              </p>
             </div>
-            <button
-              onClick={closeResults}
-              className="p-2 rounded-xl bg-white/20 hover:bg-white/30 transition-colors text-white"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
           </div>
+          <button
+            onClick={closeResults}
+            className="p-2 rounded-xl bg-coal-800 hover:bg-coal-700 transition-colors text-coal-300"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
-        {/* Content - Scrollable */}
-        <div className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
-          {/* Original Input */}
-          <div>
-            <h3 className="text-sm font-medium text-coal-400 mb-2 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-azure-500"></span>
-              Your Input
-            </h3>
-            <p className="text-coal-200 bg-coal-800 rounded-xl p-3 text-sm italic">
-              "{results.originalInput}"
-            </p>
-          </div>
-
-          {/* Results Grid */}
-          <div className="grid grid-cols-2 gap-3">
-            {/* Detected Emotion */}
-            <div className="bg-coal-800 rounded-xl p-3">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg">{emotionEmojis[results.detectedEmotion]}</span>
-                <span className="text-xs font-medium text-coal-400">Emotion</span>
-              </div>
-              <p className="text-base font-semibold text-coal-100 capitalize">
-                {results.detectedEmotion}
-              </p>
+        {/* Side by Side Cards */}
+        <div className={`grid ${results.n8nEnabled ? 'grid-cols-2' : 'grid-cols-1'} gap-4 flex-1 overflow-hidden`}>
+          {/* LEFT CARD - Frontend Output */}
+          <div className="bg-coal-900 rounded-2xl border border-coal-700 flex flex-col overflow-hidden">
+            {/* Card Header */}
+            <div className="bg-gradient-to-r from-azure-500 to-azure-600 p-4">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                </svg>
+                Frontend Output
+              </h3>
             </div>
 
-            {/* Category */}
-            <div className="bg-coal-800 rounded-xl p-3">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg">🏷️</span>
-                <span className="text-xs font-medium text-coal-400">Category</span>
+            {/* Card Content - Scrollable */}
+            <div className="p-4 space-y-3 overflow-y-auto flex-1">
+              {/* Input */}
+              <div className="bg-coal-800 rounded-lg p-3">
+                <p className="text-xs text-coal-400 mb-1">Your Input</p>
+                <p className="text-sm text-coal-200 italic">"{results.originalInput}"</p>
               </div>
-              <p className="text-base font-semibold text-coal-100">
-                {results.category}
-              </p>
+
+              {/* Processing Steps */}
+              <div className="space-y-2">
+                {results.stepResults.map((result, index) => (
+                  <div key={index} className="bg-coal-800 rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-base">{STEP_CONFIGS[result.stepType].icon}</span>
+                      <p className="text-xs font-medium text-coal-400">{STEP_CONFIGS[result.stepType].label}</p>
+                      <svg className="w-3 h-3 text-mint-500 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <p className="text-sm text-coal-100">{result.output}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Step Results - Compact */}
-          <div>
-            <h3 className="text-sm font-medium text-coal-400 mb-2 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-mint-500"></span>
-              Processing Steps
-            </h3>
-            <div className="space-y-1.5">
-              {results.stepResults.map((result, index) => (
-                <div 
-                  key={index}
-                  className="flex items-center gap-2 bg-coal-800 rounded-lg p-2"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-coal-700 flex items-center justify-center text-sm flex-shrink-0">
-                    {STEP_CONFIGS[result.stepType].icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-coal-400">{STEP_CONFIGS[result.stepType].label}</p>
-                    <p className="text-sm text-coal-200 truncate">{result.output}</p>
-                  </div>
-                  <svg className="w-4 h-4 text-mint-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          {/* RIGHT CARD - N8N Output (only show if enabled) */}
+          {results.n8nEnabled && (
+            <div className="bg-coal-900 rounded-2xl border border-coal-700 flex flex-col overflow-hidden">
+              {/* Card Header */}
+              <div className="bg-gradient-to-r from-ember-500 to-ember-600 p-4">
+                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
-                </div>
-              ))}
-            </div>
-          </div>
+                  N8N Output
+                </h3>
+              </div>
 
-          {/* Quote Section */}
-          <div className={`bg-gradient-to-br ${emotionColors[results.detectedEmotion]} rounded-xl p-4 relative overflow-hidden`}>
-            {/* Decorative quote marks */}
-            <div className="absolute top-1 left-3 text-4xl text-white/10 font-serif">"</div>
-            <div className="absolute bottom-1 right-3 text-4xl text-white/10 font-serif rotate-180">"</div>
-            
-            <div className="relative z-10">
-              <p className="text-white text-base font-medium leading-relaxed mb-2">
-                {results.quote}
-              </p>
-              <p className="text-white/80 text-sm font-medium">
-                — {results.quoteAuthor}
-              </p>
+              {/* Card Content - Scrollable */}
+              <div className="p-4 space-y-3 overflow-y-auto flex-1">
+                {/* Input */}
+                <div className="bg-coal-800 rounded-lg p-3">
+                  <p className="text-xs text-coal-400 mb-1">Your Input</p>
+                  <p className="text-sm text-coal-200 italic">"{n8nData.input || results.originalInput}"</p>
+                </div>
+
+                {/* N8N Processing Steps */}
+                <div className="space-y-2">
+                  {Object.entries(n8nData).filter(([key]) => !['input', 'language'].includes(key)).map(([stepType, output], index) => {
+                    const stepConfig = STEP_CONFIGS[stepType as keyof typeof STEP_CONFIGS];
+                    if (!stepConfig) return null;
+                    return (
+                      <div key={index} className="bg-coal-800 rounded-lg p-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-base">{stepConfig.icon}</span>
+                          <p className="text-xs font-medium text-coal-400">{stepConfig.label}</p>
+                          <svg className="w-3 h-3 text-mint-500 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                        <p className="text-sm text-coal-100">{output as string}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
-        {/* Action Buttons - Fixed at bottom */}
-        <div className="p-4 sm:p-6 pt-0 flex gap-3 flex-shrink-0 border-t border-coal-800 bg-coal-900">
+        {/* Action Buttons */}
+        <div className="flex gap-3 mt-4">
           <button
             onClick={closeResults}
             className="flex-1 py-2.5 px-4 rounded-xl font-medium text-sm
@@ -148,9 +152,7 @@ function ResultsModal() {
             Close
           </button>
           <button
-            onClick={() => {
-              closeResults();
-            }}
+            onClick={closeResults}
             className="flex-1 py-2.5 px-4 rounded-xl font-medium text-sm
                      bg-gradient-to-r from-ember-500 to-ember-600 text-white
                      hover:from-ember-400 hover:to-ember-500

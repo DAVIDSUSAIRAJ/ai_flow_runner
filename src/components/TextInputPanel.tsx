@@ -5,7 +5,7 @@ type TextInputPanelProps = {
 };
 
 function TextInputPanel({ onRunFlow }: TextInputPanelProps) {
-  const { input, setInput, runFlow, isRunning, steps, selectedLanguage, setSelectedLanguage } = useFlowStore();
+  const { input, setInput, runFlow, isRunning, steps, selectedLanguage, setSelectedLanguage, n8nEnabled, setN8nEnabled } = useFlowStore();
 
   const handleRunFlow = () => {
     if (!isRunning && input.trim() && steps.length > 0) {
@@ -88,6 +88,32 @@ function TextInputPanel({ onRunFlow }: TextInputPanelProps) {
           <option value="ar">🇸🇦 العربية (Arabic)</option>
           <option value="pt">🇵🇹 Português (Portuguese)</option>
         </select>
+      </div>
+
+      {/* N8N Toggle */}
+      <div className="px-3 sm:px-4 pb-3 sm:pb-4 flex-shrink-0">
+        <div className="flex items-center justify-between bg-coal-900 border border-coal-700 rounded-xl p-3">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-ember-500"></span>
+            <span className="text-sm font-medium text-coal-300">N8N Integration</span>
+          </div>
+          <button
+            onClick={() => setN8nEnabled(!n8nEnabled)}
+            disabled={isRunning}
+            className={`relative w-12 h-6 rounded-full transition-all duration-300 ${
+              n8nEnabled ? 'bg-ember-500' : 'bg-coal-700'
+            } ${isRunning ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+          >
+            <div
+              className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-300 ${
+                n8nEnabled ? 'translate-x-6' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
+        <p className="text-xs text-coal-500 mt-2 px-1">
+          {n8nEnabled ? '✅ N8N API calls enabled' : '⚠️ N8N API calls disabled'}
+        </p>
       </div>
 
       {/* Run Button - Extra padding on mobile for bottom nav */}

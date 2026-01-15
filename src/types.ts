@@ -39,13 +39,13 @@ export const STEP_CONFIGS: Record<StepType, StepConfig> = {
     type: 'summarize',
     label: 'Summarize',
     icon: '📝',
-    description: 'Generate a concise summary',
+    description: 'Analyze user mindset and emotional state',
   },
   translate: {
     type: 'translate',
-    label: 'Translate',
-    icon: '🌐',
-    description: 'Translate text to another language',
+    label: 'Motivate',
+    icon: '💪',
+    description: 'Generate motivational message',
   },
 };
 

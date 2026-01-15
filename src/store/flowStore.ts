@@ -24,6 +24,8 @@ type FlowResult = {
   summary: string;
   quote: string;
   quoteAuthor: string;
+  n8nResults?: any; // N8N response for comparison
+  n8nEnabled?: boolean; // Track if N8N was enabled during execution
 };
 
 type FlowState = {
@@ -34,6 +36,7 @@ type FlowState = {
   results: FlowResult | null;
   selectedLanguage: string;
   chatHistory: ChatHistory;
+  n8nEnabled: boolean;
   setInput: (value: string) => void;
   setSteps: (steps: FlowStep[]) => void;
   updateStepStatus: (id: string, status: StepStatus) => void;
@@ -44,6 +47,7 @@ type FlowState = {
   setSelectedLanguage: (lang: string) => void;
   addToChatHistory: (message: ChatMessage) => void;
   clearChatHistory: () => void;
+  setN8nEnabled: (enabled: boolean) => void;
   runFlow: () => Promise<void>;
 };
 
@@ -164,7 +168,7 @@ const getSessionId = () => {
 
 // Function to send data to n8n webhook
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const sendToN8N = async (input: any) => {
+const sendToN8N = async (input: any, language: string) => {
   try {
     const response = await fetch('https://n8n-t2i5.onrender.com/webhook-test/ai-runnner-flow', {
       method: 'POST',
@@ -173,7 +177,8 @@ const sendToN8N = async (input: any) => {
       },
       body: JSON.stringify({
         userInput: input,
-        sessionId: getSessionId()
+        sessionId: getSessionId(),
+        language: language,
       }),
     });
 
@@ -181,8 +186,18 @@ const sendToN8N = async (input: any) => {
       throw new Error(`N8N webhook failed: ${response.statusText}`);
     }
 
-    const data = await response.json();
-    console.log('N8N webhook response:', data);
+   let data = await response.json();
+    // Temporary mock data - remove when N8N is ready
+    data = {
+      input: "I was very good",
+      language: "en",
+      clean_text: "I was very good.",
+      detect_emotion: "Happy",
+      categorize_text: "Personal & General",
+      summarize: "The speaker expresses positive self-assessment. They feel they were very good.",
+      translate: "Keep up that positive energy! Your good work makes a difference."
+    };
+    
     return data;
   } catch (error) {
     console.error('Error sending to N8N:', error);
@@ -208,6 +223,7 @@ export const useFlowStore = create<FlowState>((set, get) => ({
   results: null,
   selectedLanguage: 'en',
   chatHistory: [],
+  n8nEnabled: true,
 
   setInput: (value: string) => set({ input: value }),
 
@@ -249,8 +265,10 @@ export const useFlowStore = create<FlowState>((set, get) => ({
 
   clearChatHistory: () => set({ chatHistory: [] }),
 
+  setN8nEnabled: (enabled: boolean) => set({ n8nEnabled: enabled }),
+
   runFlow: async () => {
-    const { steps, input, updateStepStatus, selectedLanguage, chatHistory, addToChatHistory } = get();
+    const { steps, input, updateStepStatus, selectedLanguage, chatHistory, addToChatHistory, n8nEnabled } = get();
     
     if (!input.trim() || steps.length === 0) return;
     
@@ -259,8 +277,11 @@ export const useFlowStore = create<FlowState>((set, get) => ({
     // Reset all statuses first
     get().resetAllStatuses();
     
-    // Send data to n8n webhook
-    await sendToN8N(input);
+    // Send data to n8n webhook only if enabled
+    let n8nResponse = null;
+    if (n8nEnabled) {
+      n8nResponse = await sendToN8N(input, selectedLanguage);
+    }
     
     // Add user input to chat history
     addToChatHistory({ role: 'user', content: input });
@@ -297,7 +318,7 @@ export const useFlowStore = create<FlowState>((set, get) => ({
             
             case 'detect_emotion':
               detectedEmotion = formatEmotionResult(aiResponse).toLowerCase();
-              output = `Detected: ${formatEmotionResult(aiResponse)}`;
+              output = formatEmotionResult(aiResponse);
               break;
             
             case 'categorize_text':
@@ -306,13 +327,42 @@ export const useFlowStore = create<FlowState>((set, get) => ({
               break;
             
             case 'summarize':
-              summary = aiResponse.trim();
+              // Generate short mindset summary
+              const mindsetPrompt = `User said: "${processedText}"
+
+Provide a brief 1-2 sentence summary focusing on:
+- What mindset/emotional state the user is in
+- What they're feeling or thinking
+
+Keep it short and focused on their mental/emotional state.`;
+              
+              const mindsetResponse = await processStepWithAI(
+                'summarize',
+                mindsetPrompt,
+                selectedLanguage,
+                currentHistory
+              );
+              summary = mindsetResponse.trim();
               output = summary;
               processedText = summary; // Update processed text for next steps
               break;
             
             case 'translate':
-              processedText = aiResponse.trim();
+              // Generate motivational quote based on emotion
+              const motivationalQuotePrompt = `User said: "${processedText}"
+Their emotion: ${detectedEmotion}
+Category: ${category}
+
+Generate a short, meaningful motivational quote or supportive message that addresses their situation.
+Keep it concise (1-2 sentences). Make it encouraging and uplifting.`;
+              
+              const motivationalResponse = await processStepWithAI(
+                'translate',
+                motivationalQuotePrompt,
+                selectedLanguage,
+                currentHistory
+              );
+              processedText = motivationalResponse.trim();
               output = processedText;
               break;
             
@@ -380,6 +430,8 @@ export const useFlowStore = create<FlowState>((set, get) => ({
           summary,
           quote,
           quoteAuthor,
+          n8nResults: n8nResponse,
+          n8nEnabled: n8nEnabled,
         },
       });
       
