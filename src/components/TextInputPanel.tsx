@@ -5,7 +5,7 @@ type TextInputPanelProps = {
 };
 
 function TextInputPanel({ onRunFlow }: TextInputPanelProps) {
-  const { input, setInput, runFlow, isRunning, steps, selectedLanguage, setSelectedLanguage, n8nEnabled, setN8nEnabled } = useFlowStore();
+  const { input, setInput, runFlow, isRunning, steps, selectedLanguage, setSelectedLanguage, n8nEnabled, setN8nEnabled, userEmail, setUserEmail } = useFlowStore();
 
   const handleRunFlow = () => {
     if (!isRunning && input.trim() && steps.length > 0) {
@@ -55,7 +55,7 @@ function TextInputPanel({ onRunFlow }: TextInputPanelProps) {
         </div>
 
         {/* Stats */}
-        <div className="flex gap-4 text-xs text-coal-500 flex-shrink-0">
+        <div className="flex gap-4 text-xs text-coal-500 flex-shrink-0" style={{transform: 'translateY(8px)'}}>
           <span>{input.length} characters</span>
           <span>{input.trim() ? input.trim().split(/\s+/).length : 0} words</span>
         </div>
@@ -111,9 +111,28 @@ function TextInputPanel({ onRunFlow }: TextInputPanelProps) {
             />
           </button>
         </div>
-        <p className="text-xs text-coal-500 mt-2 px-1">
-          {n8nEnabled ? '✅ N8N API calls enabled' : '⚠️ N8N API calls disabled'}
-        </p>
+        {n8nEnabled && (
+          <div className="mt-3">
+            <label className="text-xs font-medium text-coal-400 mb-1.5 flex items-center gap-1.5">
+              <span>📧</span>
+              Your Email
+            </label>
+            <input
+              type="email"
+              value={userEmail}
+              onChange={(e) => setUserEmail(e.target.value)}
+              placeholder="your.email@example.com"
+              disabled={isRunning}
+              className="w-full bg-coal-900 border border-coal-700 rounded-xl px-3 py-2 
+                       text-sm text-coal-100 placeholder-coal-600
+                       focus:outline-none focus:border-ember-500/50 focus:ring-2 focus:ring-ember-500/20
+                       transition-all duration-200 touch-manipulation"
+            />
+            <p className="text-xs text-coal-500 mt-1.5 px-1">
+              we'll send your personalized motivational quote to this email
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Run Button - Extra padding on mobile for bottom nav */}

@@ -37,6 +37,7 @@ type FlowState = {
   selectedLanguage: string;
   chatHistory: ChatHistory;
   n8nEnabled: boolean;
+  userEmail: string;
   setInput: (value: string) => void;
   setSteps: (steps: FlowStep[]) => void;
   updateStepStatus: (id: string, status: StepStatus) => void;
@@ -48,6 +49,7 @@ type FlowState = {
   addToChatHistory: (message: ChatMessage) => void;
   clearChatHistory: () => void;
   setN8nEnabled: (enabled: boolean) => void;
+  setUserEmail: (email: string) => void;
   runFlow: () => Promise<void>;
 };
 
@@ -168,7 +170,7 @@ const getSessionId = () => {
 
 // Function to send data to n8n webhook
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const sendToN8N = async (input: any, language: string) => {
+const sendToN8N = async (input: any, language: string, email: string) => {
   try {
     const response = await fetch('https://n8n-t2i5.onrender.com/webhook-test/ai-runnner-flow', {
       method: 'POST',
@@ -179,6 +181,7 @@ const sendToN8N = async (input: any, language: string) => {
         userInput: input,
         sessionId: getSessionId(),
         language: language,
+        userEmail: email,
       }),
     });
 
@@ -187,18 +190,9 @@ const sendToN8N = async (input: any, language: string) => {
     }
 
    let data = await response.json();
-    // Temporary mock data - remove when N8N is ready
-    data = {
-      input: "I was very good",
-      language: "en",
-      clean_text: "I was very good.",
-      detect_emotion: "Happy",
-      categorize_text: "Personal & General",
-      summarize: "The speaker expresses positive self-assessment. They feel they were very good.",
-      translate: "Keep up that positive energy! Your good work makes a difference."
-    };
+   console.log(data,"response from n8n");
     
-    return data;
+    return data
   } catch (error) {
     console.error('Error sending to N8N:', error);
     // Don't throw error - allow flow to continue even if webhook fails
@@ -224,6 +218,7 @@ export const useFlowStore = create<FlowState>((set, get) => ({
   selectedLanguage: 'en',
   chatHistory: [],
   n8nEnabled: true,
+  userEmail: '',
 
   setInput: (value: string) => set({ input: value }),
 
@@ -267,8 +262,10 @@ export const useFlowStore = create<FlowState>((set, get) => ({
 
   setN8nEnabled: (enabled: boolean) => set({ n8nEnabled: enabled }),
 
+  setUserEmail: (email: string) => set({ userEmail: email }),
+
   runFlow: async () => {
-    const { steps, input, updateStepStatus, selectedLanguage, chatHistory, addToChatHistory, n8nEnabled } = get();
+    const { steps, input, updateStepStatus, selectedLanguage, chatHistory, addToChatHistory, n8nEnabled, userEmail } = get();
     
     if (!input.trim() || steps.length === 0) return;
     
@@ -280,7 +277,7 @@ export const useFlowStore = create<FlowState>((set, get) => ({
     // Send data to n8n webhook only if enabled
     let n8nResponse = null;
     if (n8nEnabled) {
-      n8nResponse = await sendToN8N(input, selectedLanguage);
+      n8nResponse = await sendToN8N(input, selectedLanguage, userEmail);
     }
     
     // Add user input to chat history
