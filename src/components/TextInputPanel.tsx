@@ -154,7 +154,7 @@ function TextInputPanel({ onRunFlow }: TextInputPanelProps) {
                        transition-all duration-200 touch-manipulation"
             />
             <p className="text-xs text-coal-500 mt-1.5 px-1">
-              we'll send your personalized motivational quote to this email
+              we'll email your personalized motivational quote with a pdf attachment
             </p>
           </div>
         )}
