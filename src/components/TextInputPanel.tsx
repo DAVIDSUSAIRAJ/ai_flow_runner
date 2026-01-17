@@ -165,13 +165,13 @@ function TextInputPanel({ onRunFlow }: TextInputPanelProps) {
       <div className="p-3 sm:p-4 border-t border-coal-800 flex-shrink-0 pb-20 lg:pb-3 sm:pb-4 bg-coal-950">
         <button
           onClick={handleRunFlow}
-          disabled={isRunning || !input.trim() || steps.length === 0}
+          disabled={isRunning || !input.trim() || steps.length === 0 || (!aiProcessingEnabled && !n8nEnabled)}
           className={`w-full py-3 sm:py-3.5 px-4 rounded-xl font-semibold text-sm sm:text-base
                      flex items-center justify-center gap-2 transition-all duration-200
                      touch-manipulation min-h-[48px]
                      ${isRunning 
                        ? 'bg-ember-500/20 text-ember-400 cursor-not-allowed' 
-                       : !input.trim() || steps.length === 0
+                       : !input.trim() || steps.length === 0 || (!aiProcessingEnabled && !n8nEnabled)
                          ? 'bg-coal-800 text-coal-500 cursor-not-allowed'
                          : 'bg-gradient-to-r from-ember-500 to-ember-600 text-white hover:from-ember-400 hover:to-ember-500 shadow-lg shadow-ember-500/25 hover:shadow-ember-500/40 active:scale-[0.98]'
                      }`}
@@ -198,6 +198,15 @@ function TextInputPanel({ onRunFlow }: TextInputPanelProps) {
         {steps.length === 0 && (
           <p className="text-xs text-rose-400 mt-2 text-center">
             Add at least one step to run the flow
+          </p>
+        )}
+        
+        {!aiProcessingEnabled && !n8nEnabled && (
+          <p className="text-xs text-amber-400 mt-2 text-center flex items-center justify-center gap-1">
+            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            enable at least one processing option (AI or N8N)
           </p>
         )}
       </div>
