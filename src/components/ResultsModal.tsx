@@ -40,9 +40,15 @@ function ResultsModal() {
           <div className="flex items-center gap-3">
             <span className="text-3xl">{emotionEmojis[results.detectedEmotion]}</span>
             <div>
-              <h2 className="text-xl font-bold text-white">Flow Complete!</h2>
+              <h2 className="text-xl font-bold text-white">Results Ready!</h2>
               <p className="text-coal-400 text-sm">
-                {results.n8nEnabled ? 'Compare Frontend vs N8N Results' : 'Frontend Results'}
+                {results.aiProcessingEnabled && results.n8nEnabled
+                  ? 'compare ai vs workflow results'
+                  : results.aiProcessingEnabled
+                  ? 'ai processing complete'
+                  : results.n8nEnabled
+                  ? 'workflow processing complete'
+                  : 'processing complete'}
               </p>
             </div>
           </div>
@@ -57,17 +63,19 @@ function ResultsModal() {
         </div>
 
         {/* Side by Side Cards */}
-        <div className={`grid ${results.n8nEnabled ? 'grid-cols-2' : 'grid-cols-1'} gap-4 flex-1 overflow-hidden`}>
-          {/* LEFT CARD - Frontend Output */}
-          <div className="bg-coal-900 rounded-2xl border border-coal-700 flex flex-col overflow-hidden">
+        <div className={`grid ${results.aiProcessingEnabled && results.n8nEnabled ? 'grid-cols-2' : 'grid-cols-1'} gap-4 flex-1 overflow-hidden`}>
+          {/* LEFT CARD - AI Processing Output (only show if enabled) */}
+          {results.aiProcessingEnabled && (
+            <div className="bg-coal-900 rounded-2xl border border-coal-700 flex flex-col overflow-hidden">
             {/* Card Header */}
             <div className="bg-gradient-to-r from-azure-500 to-azure-600 p-4">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
-                Frontend Output
+                AI Processing
               </h3>
+              <p className="text-white/70 text-xs mt-1">real-time ai analysis</p>
             </div>
 
             {/* Card Content - Scrollable */}
@@ -95,6 +103,7 @@ function ResultsModal() {
               </div>
             </div>
           </div>
+          )}
 
           {/* RIGHT CARD - N8N Output (only show if enabled) */}
           {results.n8nEnabled && (
@@ -105,8 +114,9 @@ function ResultsModal() {
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
-                  N8N Output
+                  N8N Workflow
                 </h3>
+                <p className="text-white/70 text-xs mt-1">automated processing pipeline</p>
               </div>
 
               {/* Card Content - Scrollable */}

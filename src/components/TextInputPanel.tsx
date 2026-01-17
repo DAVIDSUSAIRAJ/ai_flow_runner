@@ -5,7 +5,7 @@ type TextInputPanelProps = {
 };
 
 function TextInputPanel({ onRunFlow }: TextInputPanelProps) {
-  const { input, setInput, runFlow, isRunning, steps, selectedLanguage, setSelectedLanguage, n8nEnabled, setN8nEnabled, userEmail, setUserEmail } = useFlowStore();
+  const { input, setInput, runFlow, isRunning, steps, selectedLanguage, setSelectedLanguage, n8nEnabled, setN8nEnabled, aiProcessingEnabled, setAiProcessingEnabled, userEmail, setUserEmail } = useFlowStore();
 
   const handleRunFlow = () => {
     if (!isRunning && input.trim() && steps.length > 0) {
@@ -35,8 +35,8 @@ function TextInputPanel({ onRunFlow }: TextInputPanelProps) {
       </div>
 
       {/* Input Section */}
-      <div className="flex-1 p-3 sm:p-4 flex flex-col gap-3 sm:gap-4 overflow-hidden">
-        <div className="flex-1 flex flex-col min-h-0">
+      <div className="p-3 sm:p-4 flex flex-col gap-3 sm:gap-4 flex-shrink-0">
+        <div className="flex flex-col">
           <label className="text-sm font-medium text-coal-300 mb-2 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-azure-500"></span>
             Input Text
@@ -45,7 +45,7 @@ function TextInputPanel({ onRunFlow }: TextInputPanelProps) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Share your thoughts... e.g., 'I'm excited about starting my new project today!' or 'Feeling grateful for my supportive team.'"
-            className="flex-1 min-h-[150px] sm:min-h-[200px] bg-coal-900 border border-coal-700 rounded-xl p-3 sm:p-4 
+            className="h-[120px] bg-coal-900 border border-coal-700 rounded-xl p-3 sm:p-4 
                      text-coal-100 placeholder-coal-600 resize-none
                      focus:outline-none focus:border-ember-500/50 focus:ring-2 focus:ring-ember-500/20
                      transition-all duration-200 font-mono text-sm sm:text-base leading-relaxed
@@ -55,14 +55,16 @@ function TextInputPanel({ onRunFlow }: TextInputPanelProps) {
         </div>
 
         {/* Stats */}
-        <div className="flex gap-4 text-xs text-coal-500 flex-shrink-0" style={{transform: 'translateY(8px)'}}>
+        <div className="flex gap-4 text-xs text-coal-500">
           <span>{input.length} characters</span>
           <span>{input.trim() ? input.trim().split(/\s+/).length : 0} words</span>
         </div>
       </div>
 
+      {/* Settings Section */}
+      <div className="px-3 sm:px-4 space-y-3 flex-shrink-0">
       {/* Language Selection */}
-      <div className="px-3 sm:px-4 pb-3 sm:pb-4 flex-shrink-0">
+      <div className="flex-shrink-0">
         <label className="text-sm font-medium text-coal-300 mb-2 flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-ember-500"></span>
           Translate To
@@ -90,8 +92,31 @@ function TextInputPanel({ onRunFlow }: TextInputPanelProps) {
         </select>
       </div>
 
+      {/* AI Processing Toggle */}
+      <div className="flex-shrink-0">
+        <div className="flex items-center justify-between bg-coal-900 border border-coal-700 rounded-xl p-3">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-azure-500"></span>
+            <span className="text-sm font-medium text-coal-300">AI Processing</span>
+          </div>
+          <button
+            onClick={() => setAiProcessingEnabled(!aiProcessingEnabled)}
+            disabled={isRunning}
+            className={`relative w-12 h-6 rounded-full transition-all duration-300 ${
+              aiProcessingEnabled ? 'bg-azure-500' : 'bg-coal-700'
+            } ${isRunning ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+          >
+            <div
+              className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-300 ${
+                aiProcessingEnabled ? 'translate-x-6' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
+      </div>
+
       {/* N8N Toggle */}
-      <div className="px-3 sm:px-4 pb-3 sm:pb-4 flex-shrink-0">
+      <div className="flex-shrink-0">
         <div className="flex items-center justify-between bg-coal-900 border border-coal-700 rounded-xl p-3">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-ember-500"></span>
@@ -133,6 +158,7 @@ function TextInputPanel({ onRunFlow }: TextInputPanelProps) {
             </p>
           </div>
         )}
+      </div>
       </div>
 
       {/* Run Button - Extra padding on mobile for bottom nav */}

@@ -26,6 +26,7 @@ type FlowResult = {
   quoteAuthor: string;
   n8nResults?: any; // N8N response for comparison
   n8nEnabled?: boolean; // Track if N8N was enabled during execution
+  aiProcessingEnabled?: boolean; // Track if AI Processing was enabled during execution
 };
 
 type FlowState = {
@@ -37,6 +38,7 @@ type FlowState = {
   selectedLanguage: string;
   chatHistory: ChatHistory;
   n8nEnabled: boolean;
+  aiProcessingEnabled: boolean;
   userEmail: string;
   setInput: (value: string) => void;
   setSteps: (steps: FlowStep[]) => void;
@@ -49,6 +51,7 @@ type FlowState = {
   addToChatHistory: (message: ChatMessage) => void;
   clearChatHistory: () => void;
   setN8nEnabled: (enabled: boolean) => void;
+  setAiProcessingEnabled: (enabled: boolean) => void;
   setUserEmail: (email: string) => void;
   runFlow: () => Promise<void>;
 };
@@ -218,6 +221,7 @@ export const useFlowStore = create<FlowState>((set, get) => ({
   selectedLanguage: 'en',
   chatHistory: [],
   n8nEnabled: true,
+  aiProcessingEnabled: true,
   userEmail: '',
 
   setInput: (value: string) => set({ input: value }),
@@ -262,10 +266,12 @@ export const useFlowStore = create<FlowState>((set, get) => ({
 
   setN8nEnabled: (enabled: boolean) => set({ n8nEnabled: enabled }),
 
+  setAiProcessingEnabled: (enabled: boolean) => set({ aiProcessingEnabled: enabled }),
+
   setUserEmail: (email: string) => set({ userEmail: email }),
 
   runFlow: async () => {
-    const { steps, input, updateStepStatus, selectedLanguage, chatHistory, addToChatHistory, n8nEnabled, userEmail } = get();
+    const { steps, input, updateStepStatus, selectedLanguage, chatHistory, addToChatHistory, n8nEnabled, aiProcessingEnabled, userEmail } = get();
     
     if (!input.trim() || steps.length === 0) return;
     
@@ -291,11 +297,21 @@ export const useFlowStore = create<FlowState>((set, get) => ({
     let currentHistory: ChatHistory = [...chatHistory];
 
     try {
-      // Run each step sequentially with AI agent
+      // Run each step sequentially with AI agent (only if enabled)
       for (const step of steps) {
         updateStepStatus(step.id, 'running');
         
         try {
+          let output = '';
+          
+          // Skip AI processing if disabled
+          if (!aiProcessingEnabled) {
+            output = 'AI Processing disabled';
+            stepResults.push({ stepType: step.type, output });
+            updateStepStatus(step.id, 'done');
+            continue;
+          }
+          
           // Process step with AI agent
           const aiResponse = await processStepWithAI(
             step.type,
@@ -303,8 +319,6 @@ export const useFlowStore = create<FlowState>((set, get) => ({
             selectedLanguage,
             currentHistory
           );
-          
-          let output = '';
           
           // Process based on step type
           switch (step.type) {
@@ -429,6 +443,7 @@ Keep it concise (1-2 sentences). Make it encouraging and uplifting.`;
           quoteAuthor,
           n8nResults: n8nResponse,
           n8nEnabled: n8nEnabled,
+          aiProcessingEnabled: aiProcessingEnabled,
         },
       });
       
