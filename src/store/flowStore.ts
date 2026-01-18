@@ -205,11 +205,11 @@ const sendToN8N = async (input: any, language: string, email: string) => {
 
 // Initialize with default steps
 const createDefaultSteps = (): FlowStep[] => [
-  { id: uuid(), type: 'clean_text', label: STEP_CONFIGS.clean_text.label, status: 'idle' },
-  { id: uuid(), type: 'detect_emotion', label: STEP_CONFIGS.detect_emotion.label, status: 'idle' },
-  { id: uuid(), type: 'categorize_text', label: STEP_CONFIGS.categorize_text.label, status: 'idle' },
-  { id: uuid(), type: 'summarize', label: STEP_CONFIGS.summarize.label, status: 'idle' },
-  { id: uuid(), type: 'translate', label: STEP_CONFIGS.translate.label, status: 'idle' },
+  { id: uuid(), type: 'clean_text', label: 'Clean Text', status: 'idle' },
+  { id: uuid(), type: 'detect_emotion', label: 'Detect Emotion', status: 'idle' },
+  { id: uuid(), type: 'categorize_text', label: 'Categorize', status: 'idle' },
+  { id: uuid(), type: 'summarize', label: 'Summarize', status: 'idle' },
+  { id: uuid(), type: 'translate', label: 'Motivate', status: 'idle' },
 ];
 
 export const useFlowStore = create<FlowState>((set, get) => ({
@@ -403,30 +403,36 @@ Keep it concise (1-2 sentences). Make it encouraging and uplifting.`;
         }
       }
       
-      // Generate context-aware quote using AI
+      // Generate context-aware quote using AI (only if AI processing is enabled)
       let quote = '';
       let quoteAuthor = '';
       
-      try {
-        // Try to generate dynamic, context-aware quote from AI
-        const aiQuote = await generateContextAwareQuote(
-          input,
-          detectedEmotion,
-          category,
-          selectedLanguage
-        );
-        quote = aiQuote.quote;
-        quoteAuthor = aiQuote.author;
-      } catch (error) {
-        console.error('Error generating AI quote, falling back to static quotes:', error);
-        
-        // Fallback to static quotes if AI generation fails
-        const multilingualQuotes = MULTILINGUAL_QUOTES[detectedEmotion]?.[selectedLanguage];
-        const englishQuotes = EMOTION_QUOTES[detectedEmotion] || EMOTION_QUOTES.neutral;
-        const quotes = multilingualQuotes || englishQuotes;
-        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-        quote = randomQuote.quote;
-        quoteAuthor = randomQuote.author;
+      if (aiProcessingEnabled) {
+        try {
+          // Try to generate dynamic, context-aware quote from AI
+          const aiQuote = await generateContextAwareQuote(
+            input,
+            detectedEmotion,
+            category,
+            selectedLanguage
+          );
+          quote = aiQuote.quote;
+          quoteAuthor = aiQuote.author;
+        } catch (error) {
+          console.error('Error generating AI quote, falling back to static quotes:', error);
+          
+          // Fallback to static quotes if AI generation fails
+          const multilingualQuotes = MULTILINGUAL_QUOTES[detectedEmotion]?.[selectedLanguage];
+          const englishQuotes = EMOTION_QUOTES[detectedEmotion] || EMOTION_QUOTES.neutral;
+          const quotes = multilingualQuotes || englishQuotes;
+          const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+          quote = randomQuote.quote;
+          quoteAuthor = randomQuote.author;
+        }
+      } else {
+        // If AI processing is disabled, use default message
+        quote = 'AI Processing disabled';
+        quoteAuthor = '';
       }
 
       // Set results
