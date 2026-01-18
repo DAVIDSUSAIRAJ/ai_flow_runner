@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { v4 as uuid } from 'uuid';
-import { FlowStep, StepStatus, STEP_CONFIGS, StepType } from '../types';
+import { FlowStep, StepStatus, StepType } from '../types';
 import { 
   processStepWithAI, 
   formatEmotionResult, 
